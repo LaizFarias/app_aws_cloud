@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora de IMC</title>
+    <style>
+        body {
+            background-image: url('https://lh5.googleusercontent.com/-eXyYr6Tgkws/VDLq72VnlCI/AAAAAAAAEmY/xyau0pL0qSo/s0/fundos%252520%252528255%252529.jpg');
+            background-size: cover;
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .container {
+            background: rgba(255, 255, 255, 0.8);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        input[type="text"], input[type="submit"] {
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        input[type="submit"] {
+            background-color: #28a745;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        input[type="submit"]:hover {
+            background-color: #218838;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Calculadora de IMC</h1>
+        <form action="/calculate_imc" method="post">
+            <label for="name">Nome:</label>
+            <input type="text" id="name" name="name" required>
+            <label for="weight">Peso (kg):</label>
+            <input type="text" id="weight" name="weight" required>
+            <label for="height">Altura (m):</label>
+            <input type="text" id="height" name="height" required>
+            <input type="submit" value="Calcular IMC">
+        </form>
+        <div id="result"></div>
+    </div>
+
+    <script>
+        document.querySelector('form').addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            var formData = new FormData(this);
+            var resultDiv = document.getElementById('result');
+
+            fetch('/calculate_imc', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                resultDiv.innerHTML = `
+                    <h2>Resultado</h2>
+                    <p>Nome: ${data.Name}</p>
+                    <p>Peso: ${data.Weight} kg</p>
+                    <p>Altura: ${data.Height} m</p>
+                    <p>IMC: ${data.IMC.toFixed(2)}</p>
+                    <p>Status: ${data.Status}</p>
+                `;
+            })
+            .catch(error => {
+                resultDiv.innerHTML = `<p>Erro ao calcular o IMC. Tente novamente.</p>`;
+            });
+        });
+    </script>
+</body>
+</html>
