@@ -1,6 +1,7 @@
-from flask import Flask, request, jsonify, send_file
+from flask import Flask, request, redirect, render_template, jsonify
 import boto3
 import uuid
+from datetime import datetime
 
 app = Flask(__name__)
 
@@ -10,7 +11,25 @@ table = dynamodb.Table('ProjetoApplicationData')
 
 @app.route('/')
 def index():
-    return send_file('index.html')
+    # Recuperar todos os registros da tabela DynamoDB
+    response = table.scan()
+    items = response.get('Items', [])
+
+    # Usando while para adicionar 'created_at' se não estiver presente
+    i = 0
+    while i < len(items):
+        if 'created_at' not in items[i]:
+            items[i]['created_at'] = '1970-01-01T00:00:00.000000'  # Data default para itens sem o campo
+        i += 1
+
+    # Ordenar os itens pela data de criação, do mais recente para o mais antigo
+    items.sort(key=lambda x: x['created_at'], reverse=True)
+
+    return render_template('index.html', posts=items)
+
+@app.route('/health')
+def health():
+    return "OK", 200
 
 @app.route('/calculate_imc', methods=['POST'])
 def calculate_imc():
@@ -36,11 +55,12 @@ def calculate_imc():
         'Weight': weight,
         'Height': height,
         'IMC': imc,
-        'Status': status
+        'Status': status,
+        'created_at': datetime.utcnow().isoformat()
     }
     table.put_item(Item=item)
 
-    return jsonify(item)
+    return redirect('/')
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=80)
