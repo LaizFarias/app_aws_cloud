@@ -2,25 +2,29 @@ from flask import Flask, request, redirect, render_template, jsonify
 import boto3
 import uuid
 from datetime import datetime
+from botocore.exceptions import ClientError
 
 app = Flask(__name__)
 
 # Configurar a conexão com o DynamoDB
 dynamodb = boto3.resource('dynamodb', region_name='us-east-1')
-table = dynamodb.Table('ProjetoApplicationData')
+table = dynamodb.Table('MyApplicationData')
 
 @app.route('/')
 def index():
-    # Recuperar todos os registros da tabela DynamoDB
-    response = table.scan()
-    items = response.get('Items', [])
+    try:
+        # Recuperar todos os registros da tabela DynamoDB
+        response = table.scan()
+        items = response.get('Items', [])
 
-    for item in items:
-        if 'created_at' not in item:
-            item['created_at'] = '1970-01-01T00:00:00.000000'  
-    items.sort(key=lambda x: x['created_at'], reverse=True)
+        for item in items:
+            if 'created_at' not in item:
+                item['created_at'] = '1970-01-01T00:00:00.000000'  
+        items.sort(key=lambda x: x['created_at'], reverse=True)
 
-    return render_template('index.html', posts=items)
+        return render_template('index.html', posts=items)
+    except ClientError as e:
+        return f"Erro ao acessar DynamoDB: {e.response['Error']['Message']}", 500
 
 @app.route('/health')
 def health():
@@ -53,7 +57,10 @@ def calculate_imc():
         'Status': status,
         'created_at': datetime.utcnow().isoformat()
     }
-    table.put_item(Item=item)
+    try:
+        table.put_item(Item=item)
+    except ClientError as e:
+        return f"Erro ao acessar DynamoDB: {e.response['Error']['Message']}", 500
 
     return redirect('/')
 
