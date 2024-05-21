@@ -41,7 +41,7 @@ def register():
                 'created_at': created_at
             }
         )
-        return redirect('/')
+        return jsonify({"Message": "Registro bem-sucedido", "Username": username}), 200
     except Exception as e:
         logging.error(f"Erro ao inserir dados: {str(e)}")
         return jsonify({"error": str(e)}), 500
