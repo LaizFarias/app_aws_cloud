@@ -15,14 +15,9 @@ def index():
     response = table.scan()
     items = response.get('Items', [])
 
-    # Usando while para adicionar 'created_at' se não estiver presente
-    i = 0
-    while i < len(items):
-        if 'created_at' not in items[i]:
-            items[i]['created_at'] = '1970-01-01T00:00:00.000000'  # Data default para itens sem o campo
-        i += 1
-
-    # Ordenar os itens pela data de criação, do mais recente para o mais antigo
+    for item in items:
+        if 'created_at' not in item:
+            item['created_at'] = '1970-01-01T00:00:00.000000'  
     items.sort(key=lambda x: x['created_at'], reverse=True)
 
     return render_template('index.html', posts=items)
@@ -63,4 +58,4 @@ def calculate_imc():
     return redirect('/')
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=80)
+    app.run(host='0.0.0.0', port=5000)
