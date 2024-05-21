@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Calculadora de IMC</title>
+    <title>Registro de Usuário</title>
     <style>
         body {
             background-image: url('https://lh5.googleusercontent.com/-eXyYr6Tgkws/VDLq72VnlCI/AAAAAAAAEmY/xyau0pL0qSo/s0/fundos%252520%252528255%252529.jpg');
@@ -27,7 +27,7 @@
             flex-direction: column;
             gap: 10px;
         }
-        input[type="text"], input[type="submit"] {
+        input[type="text"], input[type="password"], input[type="submit"] {
             padding: 10px;
             border: 1px solid #ccc;
             border-radius: 5px;
@@ -45,15 +45,13 @@
 </head>
 <body>
     <div class="container">
-        <h1>Calculadora de IMC</h1>
-        <form action="/calculate_imc" method="post">
-            <label for="name">Nome:</label>
-            <input type="text" id="name" name="name" required>
-            <label for="weight">Peso (kg):</label>
-            <input type="text" id="weight" name="weight" required>
-            <label for="height">Altura (m):</label>
-            <input type="text" id="height" name="height" required>
-            <input type="submit" value="Calcular IMC">
+        <h1>Registro de Usuário</h1>
+        <form>
+            <label for="username">Nome de Usuário:</label>
+            <input type="text" id="username" name="username" required>
+            <label for="password">Senha:</label>
+            <input type="password" id="password" name="password" required>
+            <input type="submit" value="Registrar">
         </form>
         <div id="result"></div>
     </div>
@@ -65,23 +63,24 @@
             var formData = new FormData(this);
             var resultDiv = document.getElementById('result');
 
-            fetch('/calculate_imc', {
+            fetch('/register', {
                 method: 'POST',
                 body: formData
             })
             .then(response => response.json())
             .then(data => {
-                resultDiv.innerHTML = `
-                    <h2>Resultado</h2>
-                    <p>Nome: ${data.Name}</p>
-                    <p>Peso: ${data.Weight} kg</p>
-                    <p>Altura: ${data.Height} m</p>
-                    <p>IMC: ${data.IMC.toFixed(2)}</p>
-                    <p>Status: ${data.Status}</p>
-                `;
+                if (data.error) {
+                    resultDiv.innerHTML = `<p>${data.error}</p>`;
+                } else {
+                    resultDiv.innerHTML = `
+                        <h2>Resultado</h2>
+                        <p>Nome de Usuário: ${data.Username}</p>
+                        <p>${data.Message}</p>
+                    `;
+                }
             })
             .catch(error => {
-                resultDiv.innerHTML = `<p>Erro ao calcular o IMC. Tente novamente.</p>`;
+                resultDiv.innerHTML = `<p>Erro ao registrar o usuário. Tente novamente.</p>`;
             });
         });
     </script>
