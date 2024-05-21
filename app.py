@@ -1,4 +1,4 @@
-from flask import Flask, request, render_template, redirect
+from flask import Flask, request, render_template, redirect, jsonify
 import boto3
 import uuid
 from datetime import datetime
@@ -44,7 +44,7 @@ def register():
         return redirect('/')
     except Exception as e:
         logging.error(f"Erro ao inserir dados: {str(e)}")
-        return redirect('/')
+        return jsonify({"error": str(e)}), 500
 
 @app.route('/health')
 def health():
