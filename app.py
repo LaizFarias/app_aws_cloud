@@ -76,7 +76,5 @@ def calculate_imc():
         logging.error(f"Unexpected error: {str(e)}")
         return f"Erro inesperado: {str(e)}", 500
 
-    return redirect('/')
-
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
