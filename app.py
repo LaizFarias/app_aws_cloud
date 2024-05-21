@@ -3,6 +3,10 @@ import boto3
 import uuid
 from datetime import datetime
 from botocore.exceptions import ClientError
+import logging
+
+# Configurar o logging
+logging.basicConfig(level=logging.DEBUG)
 
 app = Flask(__name__)
 
@@ -13,17 +17,19 @@ table = dynamodb.Table('MyApplicationData')
 @app.route('/')
 def index():
     try:
-        # Recuperar todos os registros da tabela DynamoDB
+        logging.debug("Fetching items from DynamoDB")
         response = table.scan()
         items = response.get('Items', [])
+        logging.debug(f"Retrieved items: {items}")
 
         for item in items:
             if 'created_at' not in item:
-                item['created_at'] = '1970-01-01T00:00:00.000000'  
+                item['created_at'] = '1970-01-01T00:00:00.000000'
         items.sort(key=lambda x: x['created_at'], reverse=True)
 
         return render_template('index.html', posts=items)
     except ClientError as e:
+        logging.error(f"Error accessing DynamoDB: {e.response['Error']['Message']}")
         return f"Erro ao acessar DynamoDB: {e.response['Error']['Message']}", 500
 
 @app.route('/health')
@@ -58,8 +64,10 @@ def calculate_imc():
         'created_at': datetime.utcnow().isoformat()
     }
     try:
+        logging.debug(f"Inserting item into DynamoDB: {item}")
         table.put_item(Item=item)
     except ClientError as e:
+        logging.error(f"Error inserting item into DynamoDB: {e.response['Error']['Message']}")
         return f"Erro ao acessar DynamoDB: {e.response['Error']['Message']}", 500
 
     return redirect('/')
