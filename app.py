@@ -3,6 +3,7 @@ import boto3
 import uuid
 from datetime import datetime
 from botocore.exceptions import ClientError
+from decimal import Decimal
 import logging
 
 # Configurar o logging
@@ -40,16 +41,16 @@ def health():
 def calculate_imc():
     try:
         name = request.form['name']
-        weight = float(request.form['weight'])
-        height = float(request.form['height'])
+        weight = Decimal(request.form['weight'])
+        height = Decimal(request.form['height'])
         imc = weight / (height ** 2)
 
         # Determinar o status do IMC
-        if imc < 18.5:
+        if imc < Decimal('18.5'):
             status = "Abaixo do peso"
-        elif 18.5 <= imc < 24.9:
+        elif Decimal('18.5') <= imc < Decimal('24.9'):
             status = "Peso normal"
-        elif 25 <= imc < 29.9:
+        elif Decimal('25') <= imc < Decimal('29.9'):
             status = "Sobrepeso"
         else:
             status = "Obesidade"
@@ -64,7 +65,7 @@ def calculate_imc():
             'Status': status,
             'created_at': datetime.utcnow().isoformat()
         }
-        
+
         logging.debug(f"Inserting item into DynamoDB: {item}")
         table.put_item(Item=item)
 
