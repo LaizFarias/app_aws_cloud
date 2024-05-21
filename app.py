@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify, render_template_string
+from flask import Flask, request, jsonify, render_template_string, abort
 import boto3
 from botocore.exceptions import NoCredentialsError, PartialCredentialsError
 import uuid
@@ -78,5 +78,5 @@ def show():
     """
     return render_template_string(items_html)
 
-if __name__ == '_main_':
+if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
