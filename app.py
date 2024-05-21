@@ -38,37 +38,43 @@ def health():
 
 @app.route('/calculate_imc', methods=['POST'])
 def calculate_imc():
-    name = request.form['name']
-    weight = float(request.form['weight'])
-    height = float(request.form['height'])
-    imc = weight / (height ** 2)
-
-    # Determinar o status do IMC
-    if imc < 18.5:
-        status = "Abaixo do peso"
-    elif 18.5 <= imc < 24.9:
-        status = "Peso normal"
-    elif 25 <= imc < 29.9:
-        status = "Sobrepeso"
-    else:
-        status = "Obesidade"
-
-    # Salvar no DynamoDB
-    item = {
-        'Id': str(uuid.uuid4()),
-        'Name': name,
-        'Weight': weight,
-        'Height': height,
-        'IMC': imc,
-        'Status': status,
-        'created_at': datetime.utcnow().isoformat()
-    }
     try:
+        name = request.form['name']
+        weight = float(request.form['weight'])
+        height = float(request.form['height'])
+        imc = weight / (height ** 2)
+
+        # Determinar o status do IMC
+        if imc < 18.5:
+            status = "Abaixo do peso"
+        elif 18.5 <= imc < 24.9:
+            status = "Peso normal"
+        elif 25 <= imc < 29.9:
+            status = "Sobrepeso"
+        else:
+            status = "Obesidade"
+
+        # Salvar no DynamoDB
+        item = {
+            'Id': str(uuid.uuid4()),
+            'Name': name,
+            'Weight': weight,
+            'Height': height,
+            'IMC': imc,
+            'Status': status,
+            'created_at': datetime.utcnow().isoformat()
+        }
+        
         logging.debug(f"Inserting item into DynamoDB: {item}")
         table.put_item(Item=item)
+
+        return redirect('/')
     except ClientError as e:
         logging.error(f"Error inserting item into DynamoDB: {e.response['Error']['Message']}")
         return f"Erro ao acessar DynamoDB: {e.response['Error']['Message']}", 500
+    except Exception as e:
+        logging.error(f"Unexpected error: {str(e)}")
+        return f"Erro inesperado: {str(e)}", 500
 
     return redirect('/')
 
